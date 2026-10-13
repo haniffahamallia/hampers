@@ -6,6 +6,8 @@
   <meta name="description" content="Niffalla Luxury Hampers — hampers pernikahan modern, elegan, dan berkesan.">
   <title>🌸"𝑵𝒊𝒇𝒇𝒂𝒍𝒍𝒂"🌸 — ℒ𝓊𝓍𝓊𝓇𝓎 ℋ𝒶𝓂𝓅𝑒𝓇𝓈</title>
   <link rel="stylesheet" href="style.css">
+  <link rel="icon" href="favicon.ico">
+  <link rel="manifest" href="site.webmanifest">
 </head>
 <body>
   <div class="announcement">✨ Hampers pernikahan dengan sentuhan elegan & personal ✨</div>
@@ -171,7 +173,7 @@
       <div class="faq-list">
         <details><summary>Apakah isi hampers bisa di-custom?</summary><p>Ya. Kamu bisa request isi, warna, tema dekorasi, dan kartu ucapan sesuai kebutuhan.</p></details>
         <details><summary>Apakah bisa untuk jumlah banyak?</summary><p>Bisa. Untuk pesanan wedding dalam jumlah banyak, sebaiknya konsultasikan kebutuhan lebih awal melalui WhatsApp.</p></details>
-        <details><summary>Bagaimana cara melakukan pemesanan?</summary><p>Tambahkan produk ke keranjang, lalu gunakan tombol WhatsApp untuk mengirim detail order kepada admin.</p></details>
+        <details><summary>Bagaimana cara melakukan pemesanan?</summary><p>Tambahkan produk ke keranjang, isi data pemesan, lalu kirim lewat WhatsApp. Pesanan otomatis tercatat di sistem kami.</p></details>
       </div>
     </section>
   </main>
@@ -188,8 +190,33 @@
   </footer>
 
   <aside class="cart-drawer" id="cartDrawer" aria-label="Keranjang belanja">
-    <div class="cart-head"><div><p class="eyebrow">YOUR BAG</p><h2>Keranjang</h2></div><button id="cartClose" aria-label="Tutup keranjang">×</button></div>
-    <div id="cartItems" class="cart-items"><p class="cart-empty">Keranjang masih kosong.</p></div>
+    <div class="cart-head">
+      <div><p class="eyebrow">YOUR BAG</p><h2>Keranjang</h2></div>
+      <button id="cartClose" aria-label="Tutup keranjang">×</button>
+    </div>
+
+    <div id="cartItems" class="cart-items">
+      <p class="cart-empty">Keranjang masih kosong.</p>
+    </div>
+
+    <!-- Form data pemesan (database order) -->
+    <div class="cart-form" id="orderFormWrap">
+      <h3>Data Pemesan</h3>
+      <div id="orderStatus" class="order-status"></div>
+
+      <label for="customerName">Nama <span>*</span></label>
+      <input type="text" id="customerName" placeholder="Nama lengkap" autocomplete="name" required>
+
+      <label for="customerWa">Nomor WhatsApp <span>*</span></label>
+      <input type="tel" id="customerWa" placeholder="08xxxxxxxxxx atau 628xxxxxxxxxx" autocomplete="tel" required>
+
+      <label for="customerNote">Catatan / Request Custom</label>
+      <textarea id="customerNote" placeholder="Contoh: kartu ucapan untuk Anisa & Budi, warna soft blue..."></textarea>
+
+      <p class="form-error" id="formError">Mohon isi nama dan nomor WhatsApp.</p>
+      <p class="form-success" id="formSuccess">Pesanan berhasil tercatat!</p>
+    </div>
+
     <div class="cart-footer">
       <div><span>Total</span><strong id="cartTotal">Rp 0</strong></div>
       <button class="btn primary full" id="checkoutBtn">Order via WhatsApp</button>
