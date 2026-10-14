@@ -5,7 +5,7 @@
  * Hanya ganti APPS_SCRIPT_URL setelah deploy Web App.
  * Tidak ada secret di sini (aman untuk GitHub Pages).
  */
-const APPS_SCRIPT_URL = "https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/exec";
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzCDURAJjcJyTxBkCJVkvTA6ljyN7kz6zOk8qUWfxNoX1esOHIkFTAQpV74kSWT5LQc/exec";
 
 const WA_NUMBER = "6285159977358";
 const WA_TEMPLATE = "Halo kak, saya mau order hampers.";
