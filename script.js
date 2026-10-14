@@ -1,11 +1,11 @@
 /**
  * Niffalla Luxury Hampers — Frontend
- * Order database via Google Apps Script + Sheets
+ * Order → Google Apps Script → Sheets
  *
- * PENTING: Ganti APPS_SCRIPT_URL di bawah dengan URL Web App
- * yang didapat setelah deploy Apps Script (lihat SETUP.md)
+ * Hanya ganti APPS_SCRIPT_URL setelah deploy Web App.
+ * Tidak ada secret di sini (aman untuk GitHub Pages).
  */
-const APPS_SCRIPT_URL = "https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/exec";
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzCDURAJjcJyTxBkCJVkvTA6ljyN7kz6zOk8qUWfxNoX1esOHIkFTAQpV74kSWT5LQc/exec";
 
 const WA_NUMBER = "6285159977358";
 const WA_TEMPLATE = "Halo kak, saya mau order hampers.";
@@ -36,15 +36,18 @@ function rupiah(value) {
 function openCart() {
   cartDrawer.classList.add("open");
   overlay.classList.add("show");
+  document.body.style.overflow = "hidden";
 }
 
 function closeCart() {
   cartDrawer.classList.remove("open");
   overlay.classList.remove("show");
+  document.body.style.overflow = "";
 }
 
 function renderCart() {
-  cartCount.textContent = cart.reduce((sum, item) => sum + item.qty, 0);
+  const count = cart.reduce((sum, item) => sum + item.qty, 0);
+  cartCount.textContent = count;
 
   if (!cart.length) {
     cartItems.innerHTML =
@@ -58,9 +61,9 @@ function renderCart() {
       (item, i) => `
     <div class="cart-row">
       <div>
-        <p>${item.name}</p>
+        <p>${escapeHtml(item.name)}</p>
         <small>${rupiah(item.price)} × ${item.qty}</small>
-        <button class="remove-item" data-remove="${i}">Hapus</button>
+        <button class="remove-item" data-remove="${i}" type="button">Hapus</button>
       </div>
       <strong>${rupiah(item.price * item.qty)}</strong>
     </div>`
@@ -76,6 +79,14 @@ function renderCart() {
       renderCart();
     })
   );
+}
+
+function escapeHtml(str) {
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
 }
 
 function showStatus(msg, type) {
@@ -104,12 +115,12 @@ function validateForm() {
   const wa = $("#customerWa").value.trim();
   const waNorm = normalizeWa(wa);
 
-  if (!name || !wa) {
-    formError.textContent = "Mohon isi nama dan nomor WhatsApp.";
+  if (!name || name.length < 2) {
+    formError.textContent = "Mohon isi nama lengkap.";
     formError.classList.add("show");
     return null;
   }
-  if (waNorm.length < 11 || waNorm.length > 15 || !waNorm.startsWith("62")) {
+  if (!wa || waNorm.length < 11 || waNorm.length > 15 || !waNorm.startsWith("62")) {
     formError.textContent = "Nomor WhatsApp tidak valid. Contoh: 081234567890";
     formError.classList.add("show");
     return null;
@@ -163,52 +174,58 @@ async function submitOrder() {
     customer_wa: formData.customer_wa,
     note: formData.note,
     source: "website",
+    // Honeypot (harus kosong)
+    website: ($("#hpWebsite") && $("#hpWebsite").value) || "",
+    user_agent: navigator.userAgent || "",
   };
 
   checkoutBtn.classList.add("loading");
   checkoutBtn.disabled = true;
   showStatus("Sedang mencatat pesanan...", "ok");
 
-  let orderId = "LOCAL-" + Date.now();
+  let orderId = "LOCAL-" + Date.now().toString(36).toUpperCase();
   let saved = false;
 
-  // Cek apakah URL sudah diganti
   const isConfigured =
     APPS_SCRIPT_URL &&
     !APPS_SCRIPT_URL.includes("YOUR_DEPLOYMENT_ID");
 
   if (isConfigured) {
     try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 12000); // 12s timeout
+
       const res = await fetch(APPS_SCRIPT_URL, {
         method: "POST",
-        // Apps Script Web App sering butuh text/plain atau no-cors workaround.
-        // Kita kirim sebagai text agar preflight sederhana, backend parse JSON.
+        // text/plain menghindari preflight CORS yang ribet di Apps Script
         headers: { "Content-Type": "text/plain;charset=utf-8" },
         body: JSON.stringify(payload),
-        redirect: "follow",
+        signal: controller.signal,
       });
+      clearTimeout(timeoutId);
 
       const data = await res.json();
       if (data && data.success) {
         orderId = data.order_id || orderId;
         saved = true;
-        showStatus("Pesanan tercatat! Membuka WhatsApp...", "ok");
+        showStatus(`Pesanan tercatat! Order ID: ${orderId}`, "ok");
+        formSuccess.textContent = `Berhasil! Order ID: ${orderId}`;
         formSuccess.classList.add("show");
       } else {
         showStatus(
-          "Gagal mencatat ke database. Tetap buka WhatsApp ya.",
+          (data && data.error) || "Gagal mencatat ke database. Tetap buka WhatsApp ya.",
           "err"
         );
       }
     } catch (err) {
       console.error("Order save error:", err);
-      showStatus(
-        "Koneksi database gagal. Pesanan tetap dikirim via WhatsApp.",
-        "err"
-      );
+      const msg =
+        err.name === "AbortError"
+          ? "Timeout koneksi. Pesanan tetap dikirim via WhatsApp."
+          : "Koneksi database gagal. Pesanan tetap dikirim via WhatsApp.";
+      showStatus(msg, "err");
     }
   } else {
-    // Mode demo: URL belum di-set
     showStatus(
       "Mode demo (API belum di-set). Pesanan dikirim via WhatsApp saja.",
       "err"
@@ -228,7 +245,6 @@ async function submitOrder() {
   checkoutBtn.classList.remove("loading");
   checkoutBtn.disabled = false;
 
-  // Opsional: kosongkan keranjang setelah sukses simpan
   if (saved) {
     setTimeout(() => {
       cart = [];
@@ -236,8 +252,9 @@ async function submitOrder() {
       $("#customerName").value = "";
       $("#customerWa").value = "";
       $("#customerNote").value = "";
+      if ($("#hpWebsite")) $("#hpWebsite").value = "";
       clearStatus();
-    }, 2500);
+    }, 2800);
   }
 }
 
@@ -277,7 +294,8 @@ $("#searchInput").addEventListener("input", (e) => {
     card.style.display = show ? "" : "none";
     if (show) visible++;
   });
-  $("#emptyState").style.display = visible ? "none" : "block";
+  const empty = $("#emptyState");
+  if (empty) empty.style.display = visible ? "none" : "block";
 });
 
 $("#menuBtn").addEventListener("click", () =>
@@ -286,5 +304,10 @@ $("#menuBtn").addEventListener("click", () =>
 $$(".nav a").forEach((a) =>
   a.addEventListener("click", () => $("#nav").classList.remove("open"))
 );
+
+// Tutup cart dengan Escape
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") closeCart();
+});
 
 renderCart();

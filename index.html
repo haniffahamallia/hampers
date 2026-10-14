@@ -213,6 +213,12 @@
       <label for="customerNote">Catatan / Request Custom</label>
       <textarea id="customerNote" placeholder="Contoh: kartu ucapan untuk Anisa & Budi, warna soft blue..."></textarea>
 
+      <!-- Honeypot anti-spam (tersembunyi dari user) -->
+      <div style="position:absolute;left:-9999px;opacity:0;height:0;overflow:hidden" aria-hidden="true">
+        <label for="hpWebsite">Website</label>
+        <input type="text" id="hpWebsite" name="website" tabindex="-1" autocomplete="off">
+      </div>
+
       <p class="form-error" id="formError">Mohon isi nama dan nomor WhatsApp.</p>
       <p class="form-success" id="formSuccess">Pesanan berhasil tercatat!</p>
     </div>

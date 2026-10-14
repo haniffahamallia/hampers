@@ -1,192 +1,105 @@
-# Niffalla Luxury Hampers — Setup Order Database
+# Niffalla — Setup Order Database (Google Sheets + Apps Script)
 
-Website GitHub Pages + **Google Sheets + Apps Script** (100% gratis).
-
-Tidak ada secret di frontend. Semua konfigurasi sensitif disimpan di **Script Properties** Apps Script.
+**API URL sudah di-set** di `script.js`. Kamu tinggal pastikan Apps Script-nya aktif.
 
 ---
 
-## Struktur paket
+## YANG HARUS KAMU LAKUKAN SEKARANG (urutan wajib)
 
-```
-niffalla-hampers-order/
-├── website/                 ← Upload ke GitHub Pages (root repo)
-│   ├── index.html
-│   ├── script.js            ← Ganti APPS_SCRIPT_URL di sini saja
-│   ├── style.css
-│   ├── assets/
-│   ├── CNAME
-│   └── favicon*
-├── apps-script/
-│   └── Code.gs              ← Paste ke Google Apps Script
-└── SETUP.md                 ← File ini
-```
+### A. Pastikan kode Apps Script terbaru & deployment aktif
 
----
-
-## Analisis UI/UX & Fitur yang dipilih
-
-| Fitur | Alasan UI/UX |
-|-------|--------------|
-| **Keranjang + form di drawer** | Customer tidak perlu pindah halaman. Flow singkat: pilih → isi data → WhatsApp. |
-| **Order ID otomatis** | Admin mudah lacak, customer punya referensi di chat. Format `NIF-YYYYMMDD-XXX`. |
-| **Simpan ke Google Sheet** | Admin lihat order real-time, ubah status manual (`Baru` → `Diproses` → `Selesai`). |
-| **Email notifikasi** | Admin langsung tahu ada order baru (pakai Script Properties `ADMIN_EMAIL`). |
-| **Honeypot anti-spam** | Field tersembunyi menolak bot tanpa CAPTCHA yang mengganggu UX. |
-| **Fallback WhatsApp** | Kalau API gagal, order tetap terkirim via WA — tidak ada lost sale. |
-| **Produk tetap di HTML** | Load super cepat (static GH Pages). Tidak ada extra request ke Sheet saat buka halaman. |
-| **Tidak ada secret di GitHub** | Hanya URL Web App (public by design). Email, spreadsheet ID, dll di Script Properties. |
-
-Fitur yang **sengaja tidak** ditambahkan (agar tetap ringan & gratis):
-- Login admin di website (lebih aman lewat Sheet langsung)
-- Payment gateway (bisa ditambah nanti)
-- Dynamic product dari Sheet (bisa, tapi menambah latency & kompleksitas)
-
----
-
-## LANGKAH 1 — Buat Google Sheet
-
-1. Buka [sheets.google.com](https://sheets.google.com) → **Blank**
-2. Rename file: `Niffalla Orders`
-3. Rename tab sheet: **`Orders`**
-4. Isi **baris 1** (header) dengan:
-
-```
-timestamp	order_id	items	total	customer_name	customer_wa	note	source	status	admin_note	user_agent	ip_hint
-```
-
-Atau biarkan kosong — script akan membuat header otomatis saat order pertama masuk.
-
-5. (Opsional) Freeze baris 1: View → Freeze → 1 row
-
----
-
-## LANGKAH 2 — Pasang Apps Script
-
-1. Di Google Sheet yang sama: **Extensions → Apps Script**
-2. Hapus kode default
-3. Copy seluruh isi `apps-script/Code.gs` → paste
-4. **Save** → nama project: `Niffalla Order API`
-5. Time zone: Project Settings (⚙️) → Time zone → `(GMT+07:00) Bangkok, Hanoi, Jakarta`
-
----
-
-## LANGKAH 3 — Script Properties (penting)
-
-1. Di editor Apps Script klik ⚙️ **Project Settings**
-2. Scroll ke **Script properties** → **Add script property**
-
-| Property      | Value                          | Keterangan                          |
-|---------------|--------------------------------|-------------------------------------|
-| `ADMIN_EMAIL` | `emailkamu@gmail.com`          | Notifikasi order baru (wajib isi)   |
-| `SPREADSHEET_ID` | (opsional) ID dari URL sheet | Hanya jika script tidak terikat sheet |
-
-**Cara cepat (opsional):**  
-Jalankan fungsi `setProperties()` sekali dari editor (ganti email di dalam fungsi dulu), lalu hapus/comment fungsi tersebut.
-
----
-
-## LANGKAH 4 — Deploy Web App
-
-1. **Deploy → New deployment**
-2. Type: **Web app**
-3. Description: `Niffalla Order API v2`
-4. Execute as: **Me**
-5. Who has access: **Anyone** ← wajib
-6. **Deploy** → Authorize (Advanced → Go to … (unsafe) → Allow)
-7. **Copy URL** yang muncul:
+1. Buka Google Sheet order kamu
+2. **Extensions → Apps Script**
+3. **Hapus semua kode** yang ada di editor
+4. Buka file `apps-script/Code.gs` dari paket ini → **copy semua** → paste di editor
+5. Klik **Save** (Ctrl+S)
+6. Klik **Deploy → Manage deployments**
+7. Kalau sudah ada deployment:
+   - Klik ikon **pensil** (Edit)
+   - Version → pilih **New version**
+   - Who has access: pastikan **Anyone**
+   - Klik **Deploy**
+8. Kalau belum ada deployment:
+   - **Deploy → New deployment**
+   - Type: **Web app**
+   - Execute as: **Me**
+   - Who has access: **Anyone**
+   - Deploy → Authorize (Advanced → Go to … → Allow)
+9. URL Web App kamu:
    ```
-   https://script.google.com/macros/s/AKfycbxxxxxxxxxxxxxxxx/exec
+   https://script.google.com/macros/s/AKfycbzCDURAJjcJyTxBkCJVkvTA6ljyN7kz6zOk8qUWfxNoX1esOHIkFTAQpV74kSWT5LQc/exec
    ```
+   (sudah terpasang di `script.js`)
 
----
+### B. (Opsional tapi recommended) Set email notifikasi
 
-## LANGKAH 5 — Hubungkan ke Website
+1. Di Apps Script editor → ikon ⚙️ **Project Settings**
+2. Scroll ke **Script properties** → Add script property
+3. Property: `ADMIN_EMAIL`  
+   Value: email Gmail kamu (contoh `nama@gmail.com`)
+4. Save
 
-1. Buka `website/script.js`
-2. Ganti baris ini:
-   ```js
-   const APPS_SCRIPT_URL = "https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/exec";
+### C. Upload ke GitHub
+
+1. Extract zip ini
+2. Isi **root repo** GitHub kamu dengan file-file website (bukan folder di dalamnya):
    ```
-   dengan URL yang kamu copy.
-3. Simpan.
+   index.html
+   script.js          ← sudah berisi API URL kamu
+   style.css
+   CNAME
+   site.webmanifest
+   favicon*
+   assets/
+   ```
+3. Folder `apps-script/` dan `orphan/` **tidak perlu** di-upload ke GitHub Pages (boleh disimpan di komputer saja)
+4. Commit & push
+5. Tunggu 1 menit → hard refresh website (`Ctrl + Shift + R`)
 
----
+### D. Test
 
-## LANGKAH 6 — Deploy ke GitHub Pages
-
-### Update repo yang sudah ada
-1. Ganti semua file di root repo dengan isi folder `website/`
-2. Commit & push
-3. Pastikan Pages aktif (Settings → Pages → Branch `main` / root)
-
-### Repo baru
-1. Buat repo → upload isi `website/`
-2. Settings → Pages → Deploy from branch `main` → `/ (root)`
-3. Custom domain `niffalla.my.id` → file `CNAME` sudah ada
-
----
-
-## Cara kerja setelah live
-
-1. Customer pilih produk → keranjang
-2. Isi **Nama** + **Nomor WA** (+ catatan opsional)
-3. Klik **Order via WhatsApp**
-4. Sistem:
-   - Kirim data ke Google Sheet (baris baru, status `Baru`)
-   - Generate `order_id` (contoh `NIF-20261014-001`)
-   - Kirim email notifikasi ke `ADMIN_EMAIL`
-   - Buka WhatsApp dengan pesan lengkap + Order ID
-5. Kamu buka Sheet → ubah status jadi `Diproses` / `Selesai` / `Batal`
-
----
-
-## Testing
-
-1. Buka website
-2. Tambah 1 produk → isi nama + WA sendiri
-3. Klik Order via WhatsApp
-4. Cek:
-   - Notifikasi “Pesanan tercatat! Order ID: …”
-   - WhatsApp terbuka dengan Order ID
-   - Baris baru muncul di Sheet
-   - Email masuk ke inbox admin
-
-Kalau muncul “Mode demo (API belum di-set)” → URL di `script.js` belum diganti.
-
----
-
-## Update kode Apps Script nanti
-
-Setiap ubah `Code.gs`:
-1. Save
-2. **Deploy → Manage deployments** → Edit (pensil)
-3. Version → **New version** → Deploy  
-URL tetap sama, tidak perlu ganti di website.
-
----
-
-## Keamanan & performa
-
-- URL Web App bersifat publik (normal untuk form order).
-- Tidak ada API key / password di GitHub Pages.
-- Honeypot menolak bot sederhana.
-- LockService mencegah Order ID bentrok saat concurrent.
-- Timeout 12 detik di frontend + fallback WhatsApp.
-- Kuota gratis Google sangat cukup untuk toko hampers.
+1. Buka https://niffalla.my.id
+2. Tambah 1 produk ke keranjang
+3. Isi nama + nomor WA sendiri
+4. Klik **Order via WhatsApp**
+5. Harus muncul: **Pesanan tercatat! Order ID: NIF-...**
+6. Cek Google Sheet → baris baru muncul
+7. WhatsApp terbuka dengan Order ID
 
 ---
 
 ## Troubleshooting
 
-| Masalah | Solusi |
-|---------|--------|
-| Mode demo… | Ganti `APPS_SCRIPT_URL` di `script.js` |
-| Order tidak masuk Sheet | Who has access = **Anyone**, sudah Authorize |
-| Email tidak masuk | Cek `ADMIN_EMAIL` di Script Properties + spam folder |
-| CORS / network error | Deploy ulang “Anyone”, Content-Type sudah `text/plain` |
-| Order ID dobel | Sangat jarang (ada LockService); hapus baris test lalu coba lagi |
+| Pesan | Artinya | Solusi |
+|-------|---------|--------|
+| Mode demo (API belum di-set) | `script.js` masih placeholder | Pastikan file `script.js` dari zip ini yang di-upload (bukan yang lama) |
+| Koneksi database gagal | Deployment belum "Anyone" / belum New version | Ulangi langkah A poin 6–8 |
+| Order tidak masuk Sheet | Authorization belum / sheet name salah | Pastikan sheet tab bernama `Orders`, Authorize ulang |
+| Email tidak masuk | Belum set ADMIN_EMAIL | Langkah B |
+
+### Cara cek API hidup
+
+Buka di browser:
+```
+https://script.google.com/macros/s/AKfycbzCDURAJjcJyTxBkCJVkvTA6ljyN7kz6zOk8qUWfxNoX1esOHIkFTAQpV74kSWT5LQc/exec
+```
+Harus muncul JSON seperti:
+```json
+{"ok":true,"service":"Niffalla Order API","version":"2.0",...}
+```
+
+Kalau muncul error / blank → deployment belum benar (ulangi langkah A).
 
 ---
 
-Selamat jualan! 🌸
+## Struktur paket ini
+
+```
+niffalla-ready/
+├── index.html, script.js, style.css, assets/, CNAME, favicon*   ← UPLOAD KE GITHUB
+├── apps-script/Code.gs                                          ← PASTE KE APPS SCRIPT
+├── orphan/                                                      ← file lama/tidak terpakai (simpan di komputer)
+└── SETUP.md
+```
+
+File di folder `orphan/` tidak dipakai website. Boleh dihapus dari repo GitHub agar repo lebih ringan.
