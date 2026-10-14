@@ -1,0 +1,19 @@
+{
+  "name": "Niffalla Luxury Hampers",
+  "short_name": "Niffalla",
+  "icons": [
+    {
+      "src": "favicon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "favicon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "theme_color": "#a9c9df",
+  "background_color": "#f5fafc",
+  "display": "standalone"
+}
