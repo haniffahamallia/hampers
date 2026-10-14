@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Admin Panel — Niffalla Orders</title>
+  <link rel="icon" href="favicon.ico">
+  <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+  <!-- LOGIN -->
+  <div id="loginScreen" class="login-screen">
+    <div class="login-card">
+      <div class="login-brand">
+        <span class="flower">🌸</span>
+        <h1>"𝑵𝒊𝒇𝒇𝒂𝒍𝒍𝒂"</h1>
+        <p>Admin Panel · Orders</p>
+      </div>
+      <form id="loginForm" autocomplete="off">
+        <label for="adminPassword">Password Admin</label>
+        <input type="password" id="adminPassword" placeholder="Masukkan password" required autofocus>
+        <p class="login-error" id="loginError"></p>
+        <button type="submit" class="btn primary full" id="loginBtn">Masuk</button>
+      </form>
+      <p class="login-hint">Password disimpan di Script Properties Apps Script</p>
+    </div>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div id="dashboard" class="dashboard hidden">
+    <header class="admin-header">
+      <div class="brand-mini">
+        <span>🌸</span>
+        <strong>Niffalla Admin</strong>
+      </div>
+      <div class="header-actions">
+        <button type="button" class="btn ghost sm" id="btnRefresh">↻ Refresh</button>
+        <button type="button" class="btn ghost sm" id="btnAdd">+ Order Manual</button>
+        <button type="button" class="btn ghost sm" id="btnLogout">Keluar</button>
+      </div>
+    </header>
+
+    <section class="stats" id="statsBar">
+      <div class="stat"><span id="statTotal">0</span><small>Total</small></div>
+      <div class="stat baru"><span id="statBaru">0</span><small>Baru</small></div>
+      <div class="stat proses"><span id="statProses">0</span><small>Diproses</small></div>
+      <div class="stat selesai"><span id="statSelesai">0</span><small>Selesai</small></div>
+      <div class="stat batal"><span id="statBatal">0</span><small>Batal</small></div>
+    </section>
+
+    <section class="toolbar">
+      <input type="search" id="searchInput" placeholder="Cari order ID, nama, WA, catatan…">
+      <select id="statusFilter">
+        <option value="">Semua status</option>
+        <option value="Baru">Baru</option>
+        <option value="Diproses">Diproses</option>
+        <option value="Selesai">Selesai</option>
+        <option value="Batal">Batal</option>
+      </select>
+    </section>
+
+    <section class="table-wrap">
+      <div id="loadingState" class="empty-state hidden">Memuat data…</div>
+      <div id="emptyState" class="empty-state hidden">Belum ada order.</div>
+      <table id="ordersTable" class="orders-table hidden">
+        <thead>
+          <tr>
+            <th>Waktu</th>
+            <th>Order ID</th>
+            <th>Customer</th>
+            <th>Items</th>
+            <th>Total</th>
+            <th>Status</th>
+            <th>Aksi</th>
+          </tr>
+        </thead>
+        <tbody id="ordersBody"></tbody>
+      </table>
+    </section>
+  </div>
+
+  <!-- MODAL EDIT / CREATE -->
+  <div id="modal" class="modal hidden" role="dialog" aria-modal="true">
+    <div class="modal-card">
+      <div class="modal-head">
+        <h2 id="modalTitle">Edit Order</h2>
+        <button type="button" class="icon-close" id="modalClose" aria-label="Tutup">×</button>
+      </div>
+      <form id="orderForm">
+        <input type="hidden" id="fRow">
+
+        <div class="form-grid">
+          <div>
+            <label>Order ID</label>
+            <input type="text" id="fOrderId" readonly class="readonly">
+          </div>
+          <div>
+            <label>Status</label>
+            <select id="fStatus">
+              <option value="Baru">Baru</option>
+              <option value="Diproses">Diproses</option>
+              <option value="Selesai">Selesai</option>
+              <option value="Batal">Batal</option>
+            </select>
+          </div>
+          <div>
+            <label>Nama Customer *</label>
+            <input type="text" id="fName" required>
+          </div>
+          <div>
+            <label>WhatsApp</label>
+            <input type="text" id="fWa" placeholder="628…">
+          </div>
+          <div class="full">
+            <label>Total (Rp)</label>
+            <input type="number" id="fTotal" min="0" step="1000">
+          </div>
+          <div class="full">
+            <label>Catatan Customer</label>
+            <textarea id="fNote" rows="2"></textarea>
+          </div>
+          <div class="full">
+            <label>Catatan Admin</label>
+            <textarea id="fAdminNote" rows="2" placeholder="Internal note…"></textarea>
+          </div>
+          <div class="full">
+            <label>Items (ringkasan)</label>
+            <pre id="fItemsPreview" class="items-preview"></pre>
+          </div>
+        </div>
+
+        <p class="form-msg" id="formMsg"></p>
+
+        <div class="modal-actions">
+          <button type="button" class="btn danger" id="btnDelete" hidden>Hapus</button>
+          <div class="spacer"></div>
+          <button type="button" class="btn ghost" id="btnCancel">Batal</button>
+          <button type="submit" class="btn primary" id="btnSave">Simpan</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="toast" class="toast hidden"></div>
+
+  <script src="admin.js"></script>
+</body>
+</html>
