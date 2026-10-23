@@ -1,0 +1,28 @@
+Niffalla — Support Thumbnail Share (og:image)
+==============================================
+
+ISI ZIP
+-------
+- index.html     → meta Open Graph + Twitter Card
+- og-image.jpg   → gambar preview 1200x630 (117 KB)
+
+CARA PASANG
+-----------
+1. Upload ke ROOT repo GitHub (https://github.com/haniffahamallia/hampers):
+   - index.html  (timpa yang lama)
+   - og-image.jpg (file baru)
+2. Commit & push
+3. Tunggu 1–2 menit
+4. Cek: https://niffalla.my.id/og-image.jpg  (harus muncul gambar)
+
+REFRESH CACHE PREVIEW
+---------------------
+1. Buka https://developers.facebook.com/tools/debug/
+2. Masukkan: https://niffalla.my.id/
+3. Klik "Scrape Again" 2–3 kali
+4. Test share ke WhatsApp (chat baru / ke diri sendiri)
+
+CATATAN fb:app_id
+-----------------
+Peringatan "Missing Properties: fb:app_id" di debugger BOLEH DIABAIKAN.
+Tidak wajib untuk thumbnail muncul di WhatsApp/Facebook.
