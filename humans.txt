@@ -1,0 +1,10 @@
+/* TEAM */
+Owner: Niffalla Luxury Hampers
+Site: https://niffalla.my.id/
+Contact: WhatsApp +62 851-5997-7358
+
+/* SITE */
+Last update: 2026-10-27
+Language: Indonesian / Bahasa Indonesia
+Standards: HTML5, CSS3, Schema.org
+Components: GitHub Pages, Google Sheets + Apps Script

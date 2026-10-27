@@ -1,0 +1,19 @@
+# robots.txt for https://niffalla.my.id/
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://niffalla.my.id/sitemap.xml
+
+# Crawl-delay (opsional, biarkan kosong untuk Google)
+# Crawl-delay: 1
+
+# Blokir file/folder yang tidak perlu diindeks (jika ada)
+Disallow: /admin.html
+Disallow: /admin.js
+Disallow: /admin.css
+Disallow: /apps-script/
+Disallow: /*.gs$
+Disallow: /Code.gs
+Disallow: /Orders-header-sample.csv
+Disallow: /sample-orders-header.csv
