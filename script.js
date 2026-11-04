@@ -1,16 +1,21 @@
 /**
- * Niffalla Luxury Hampers — Frontend
- * Order → Google Apps Script → Sheets
- *
- * Hanya ganti APPS_SCRIPT_URL setelah deploy Web App.
- * Tidak ada secret di sini (aman untuk GitHub Pages).
+ * Niffalla Luxury Hampers — Enhanced Frontend
+ * Features: Welcome overlay + sound, Interactive Hero, 3D Showcase, Promo Countdown
  */
 const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzCDURAJjcJyTxBkCJVkvTA6ljyN7kz6zOk8qUWfxNoX1esOHIkFTAQpV74kSWT5LQc/exec";
 
 const WA_NUMBER = "6285159977358";
 const WA_TEMPLATE = "Halo kak, saya mau order hampers.";
 
+/* ===== PROMO COUNTDOWN TARGET =====
+   Ganti tanggal ini sesuai periode promo kamu.
+   Format: year, monthIndex (0=Jan), day, hour, minute
+*/
+const PROMO_END = new Date(2026, 11, 31, 23, 59, 59); // 31 Des 2026
+
 let cart = [];
+let soundEnabled = true;
+let audioCtx = null;
 
 const $ = (s) => document.querySelector(s);
 const $$ = (s) => [...document.querySelectorAll(s)];
@@ -25,6 +30,345 @@ const orderStatus = $("#orderStatus");
 const formError = $("#formError");
 const formSuccess = $("#formSuccess");
 
+/* ========== SOUND (Web Audio API — elegan, tanpa file eksternal) ========== */
+function ensureAudio() {
+  if (!audioCtx) {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  if (audioCtx.state === "suspended") audioCtx.resume();
+  return audioCtx;
+}
+
+function playChime() {
+  if (!soundEnabled) return;
+  try {
+    const ctx = ensureAudio();
+    const now = ctx.currentTime;
+
+    // Soft elegant 3-note chime (C5 - E5 - G5 style, soft blue feel)
+    const notes = [523.25, 659.25, 783.99];
+    notes.forEach((freq, i) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      const filter = ctx.createBiquadFilter();
+
+      osc.type = "sine";
+      osc.frequency.value = freq;
+      filter.type = "lowpass";
+      filter.frequency.value = 2000;
+
+      gain.gain.setValueAtTime(0, now + i * 0.18);
+      gain.gain.linearRampToValueAtTime(0.12, now + i * 0.18 + 0.05);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.18 + 1.4);
+
+      osc.connect(filter);
+      filter.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.start(now + i * 0.18);
+      osc.stop(now + i * 0.18 + 1.5);
+    });
+
+    // Soft pad underneath
+    const pad = ctx.createOscillator();
+    const padGain = ctx.createGain();
+    pad.type = "sine";
+    pad.frequency.value = 261.63;
+    padGain.gain.setValueAtTime(0, now);
+    padGain.gain.linearRampToValueAtTime(0.04, now + 0.3);
+    padGain.gain.exponentialRampToValueAtTime(0.001, now + 2.2);
+    pad.connect(padGain);
+    padGain.connect(ctx.destination);
+    pad.start(now);
+    pad.stop(now + 2.3);
+  } catch (e) {
+    console.warn("Audio not available:", e);
+  }
+}
+
+function playSoftClick() {
+  if (!soundEnabled) return;
+  try {
+    const ctx = ensureAudio();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = "sine";
+    osc.frequency.value = 880;
+    gain.gain.setValueAtTime(0.06, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.12);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start();
+    osc.stop(ctx.currentTime + 0.13);
+  } catch (_) {}
+}
+
+/* ========== WELCOME OVERLAY ========== */
+function initWelcome() {
+  const overlayEl = $("#welcomeOverlay");
+  const enterBtn = $("#welcomeEnter");
+  const soundCheck = $("#welcomeSoundCheck");
+  const soundToggle = $("#soundToggle");
+
+  // Already visited this session?
+  if (sessionStorage.getItem("niffalla_welcomed") === "1") {
+    overlayEl.classList.add("hide");
+    overlayEl.setAttribute("aria-hidden", "true");
+    return;
+  }
+
+  enterBtn.addEventListener("click", () => {
+    soundEnabled = soundCheck.checked;
+    if (soundEnabled) playChime();
+    sessionStorage.setItem("niffalla_welcomed", "1");
+    overlayEl.classList.add("hide");
+    overlayEl.setAttribute("aria-hidden", "true");
+    updateSoundToggleUI();
+  });
+
+  soundToggle.addEventListener("click", () => {
+    soundEnabled = !soundEnabled;
+    updateSoundToggleUI();
+    if (soundEnabled) playSoftClick();
+  });
+
+  function updateSoundToggleUI() {
+    soundToggle.classList.toggle("muted", !soundEnabled);
+  }
+  updateSoundToggleUI();
+}
+
+/* ========== INTERACTIVE HERO (parallax + 3D tilt + particles) ========== */
+function initInteractiveHero() {
+  const hero = $("#heroInteractive");
+  const frame = $("#heroFrame");
+  if (!hero || !frame) return;
+
+  // Particles
+  const particlesWrap = $("#heroParticles");
+  if (particlesWrap) {
+    for (let i = 0; i < 18; i++) {
+      const p = document.createElement("div");
+      p.className = "hero-particle";
+      p.style.left = Math.random() * 100 + "%";
+      p.style.animationDuration = 8 + Math.random() * 12 + "s";
+      p.style.animationDelay = Math.random() * 8 + "s";
+      p.style.width = p.style.height = 3 + Math.random() * 5 + "px";
+      particlesWrap.appendChild(p);
+    }
+  }
+
+  // Mouse parallax + 3D tilt
+  let ticking = false;
+  hero.addEventListener("mousemove", (e) => {
+    if (ticking) return;
+    ticking = true;
+    requestAnimationFrame(() => {
+      const rect = hero.getBoundingClientRect();
+      const x = (e.clientX - rect.left) / rect.width - 0.5;
+      const y = (e.clientY - rect.top) / rect.height - 0.5;
+
+      // Parallax layers
+      $$("[data-parallax]").forEach((el) => {
+        const depth = parseFloat(el.dataset.parallax) || 0.05;
+        el.style.transform = `translate(${x * depth * -80}px, ${y * depth * -60}px)`;
+      });
+
+      // 3D tilt on hero frame
+      const rotY = x * 12;
+      const rotX = -y * 10;
+      frame.style.transform = `perspective(900px) rotateX(${rotX}deg) rotateY(${rotY}deg) scale3d(1.02,1.02,1.02)`;
+
+      ticking = false;
+    });
+  });
+
+  hero.addEventListener("mouseleave", () => {
+    $$("[data-parallax]").forEach((el) => {
+      el.style.transform = "";
+    });
+    frame.style.transform = "";
+  });
+
+  // Touch support for mobile
+  hero.addEventListener("touchmove", (e) => {
+    if (!e.touches[0]) return;
+    const t = e.touches[0];
+    const rect = hero.getBoundingClientRect();
+    const x = (t.clientX - rect.left) / rect.width - 0.5;
+    const y = (t.clientY - rect.top) / rect.height - 0.5;
+    const rotY = x * 8;
+    const rotX = -y * 6;
+    frame.style.transform = `perspective(900px) rotateX(${rotX}deg) rotateY(${rotY}deg)`;
+  }, { passive: true });
+}
+
+/* ========== PRODUCT CARD 3D TILT ========== */
+function initCardTilt() {
+  $$(".tilt-card").forEach((card) => {
+    card.addEventListener("mousemove", (e) => {
+      const rect = card.getBoundingClientRect();
+      const x = (e.clientX - rect.left) / rect.width - 0.5;
+      const y = (e.clientY - rect.top) / rect.height - 0.5;
+      card.style.transform = `perspective(800px) rotateX(${-y * 8}deg) rotateY(${x * 10}deg) translateY(-6px)`;
+    });
+    card.addEventListener("mouseleave", () => {
+      card.style.transform = "";
+    });
+  });
+}
+
+/* ========== 3D PRODUCT SHOWCASE CAROUSEL ========== */
+function initShowcase3D() {
+  const items = $$(".showcase-item");
+  const dotsWrap = $("#showcaseDots");
+  const prevBtn = $("#showcasePrev");
+  const nextBtn = $("#showcaseNext");
+  const addBtn = $("#showcaseAdd");
+  if (!items.length) return;
+
+  let current = 0;
+  const total = items.length;
+
+  // Build dots
+  items.forEach((_, i) => {
+    const d = document.createElement("button");
+    d.setAttribute("aria-label", `Produk ${i + 1}`);
+    if (i === 0) d.classList.add("active");
+    d.addEventListener("click", () => goTo(i));
+    dotsWrap.appendChild(d);
+  });
+
+  function layout() {
+    items.forEach((item, i) => {
+      const diff = i - current;
+      // Normalize to -2..2 range for circular feel
+      let offset = diff;
+      if (offset > total / 2) offset -= total;
+      if (offset < -total / 2) offset += total;
+
+      const abs = Math.abs(offset);
+      const z = 200 - abs * 80;
+      const x = offset * 160;
+      const scale = 1 - abs * 0.18;
+      const rotY = offset * -28;
+      const opacity = abs > 2 ? 0 : 1 - abs * 0.32;
+
+      item.classList.toggle("active", i === current);
+      item.style.transform = `translateX(${x}px) translateZ(${z}px) rotateY(${rotY}deg) scale(${scale})`;
+      item.style.opacity = opacity;
+      item.style.zIndex = String(10 - abs);
+      item.style.pointerEvents = abs > 1.5 ? "none" : "auto";
+    });
+
+    $$("#showcaseDots button").forEach((d, i) => {
+      d.classList.toggle("active", i === current);
+    });
+
+    // Update add button data
+    const active = items[current];
+    if (active && addBtn) {
+      addBtn.dataset.product = active.dataset.product;
+      addBtn.dataset.price = active.dataset.price;
+    }
+  }
+
+  function goTo(index) {
+    current = ((index % total) + total) % total;
+    layout();
+    playSoftClick();
+  }
+
+  prevBtn.addEventListener("click", () => goTo(current - 1));
+  nextBtn.addEventListener("click", () => goTo(current + 1));
+
+  items.forEach((item) => {
+    item.addEventListener("click", () => {
+      const idx = Number(item.dataset.index);
+      if (idx !== current) goTo(idx);
+    });
+  });
+
+  // Drag / swipe support
+  let startX = 0;
+  let dragging = false;
+  const stage = $(".showcase-stage");
+  stage.addEventListener("pointerdown", (e) => {
+    startX = e.clientX;
+    dragging = true;
+  });
+  stage.addEventListener("pointerup", (e) => {
+    if (!dragging) return;
+    dragging = false;
+    const dx = e.clientX - startX;
+    if (Math.abs(dx) > 40) {
+      if (dx < 0) goTo(current + 1);
+      else goTo(current - 1);
+    }
+  });
+
+  if (addBtn) {
+    addBtn.addEventListener("click", () => {
+      const name = addBtn.dataset.product;
+      const price = Number(addBtn.dataset.price);
+      if (!name) return;
+      const existing = cart.find((x) => x.name === name);
+      if (existing) existing.qty++;
+      else cart.push({ name, price, qty: 1 });
+      renderCart();
+      openCart();
+      playSoftClick();
+    });
+  }
+
+  layout();
+  // Auto-rotate gently every 5s (pause on interaction handled by goTo)
+  setInterval(() => {
+    if (!document.hidden) goTo(current + 1);
+  }, 5500);
+}
+
+/* ========== PROMO COUNTDOWN ========== */
+function initCountdown() {
+  const daysEl = $("#cdDays");
+  const hoursEl = $("#cdHours");
+  const minsEl = $("#cdMins");
+  const secsEl = $("#cdSecs");
+  const noteEl = $("#countdownNote");
+  if (!daysEl) return;
+
+  function tick() {
+    const now = new Date();
+    let diff = PROMO_END - now;
+
+    if (diff <= 0) {
+      daysEl.textContent = "00";
+      hoursEl.textContent = "00";
+      minsEl.textContent = "00";
+      secsEl.textContent = "00";
+      if (noteEl) noteEl.textContent = "Promo telah berakhir — tetap bisa order via WhatsApp ya!";
+      return;
+    }
+
+    const d = Math.floor(diff / 86400000);
+    diff %= 86400000;
+    const h = Math.floor(diff / 3600000);
+    diff %= 3600000;
+    const m = Math.floor(diff / 60000);
+    diff %= 60000;
+    const s = Math.floor(diff / 1000);
+
+    daysEl.textContent = String(d).padStart(2, "0");
+    hoursEl.textContent = String(h).padStart(2, "0");
+    minsEl.textContent = String(m).padStart(2, "0");
+    secsEl.textContent = String(s).padStart(2, "0");
+  }
+
+  tick();
+  setInterval(tick, 1000);
+}
+
+/* ========== CART (original logic kept) ========== */
 function rupiah(value) {
   return new Intl.NumberFormat("id-ID", {
     style: "currency",
@@ -174,7 +518,6 @@ async function submitOrder() {
     customer_wa: formData.customer_wa,
     note: formData.note,
     source: "website",
-    // Honeypot (harus kosong)
     website: ($("#hpWebsite") && $("#hpWebsite").value) || "",
     user_agent: navigator.userAgent || "",
   };
@@ -193,11 +536,10 @@ async function submitOrder() {
   if (isConfigured) {
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 12000); // 12s timeout
+      const timeoutId = setTimeout(() => controller.abort(), 12000);
 
       const res = await fetch(APPS_SCRIPT_URL, {
         method: "POST",
-        // text/plain menghindari preflight CORS yang ribet di Apps Script
         headers: { "Content-Type": "text/plain;charset=utf-8" },
         body: JSON.stringify(payload),
         signal: controller.signal,
@@ -230,12 +572,8 @@ async function submitOrder() {
       "Mode demo (API belum di-set). Pesanan dikirim via WhatsApp saja.",
       "err"
     );
-    console.warn(
-      "Ganti APPS_SCRIPT_URL di script.js dengan URL Web App dari Apps Script."
-    );
   }
 
-  // Selalu buka WhatsApp (fallback aman)
   const text = buildWaMessage(orderId, formData, total);
   window.open(
     `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(text)}`,
@@ -258,7 +596,7 @@ async function submitOrder() {
   }
 }
 
-// ——— Event listeners ———
+/* ========== EVENT LISTENERS ========== */
 $$(".add-cart").forEach((btn) => {
   btn.addEventListener("click", () => {
     const name = btn.dataset.product;
@@ -268,6 +606,7 @@ $$(".add-cart").forEach((btn) => {
     else cart.push({ name, price, qty: 1 });
     renderCart();
     openCart();
+    playSoftClick();
   });
 });
 
@@ -305,9 +644,16 @@ $$(".nav a").forEach((a) =>
   a.addEventListener("click", () => $("#nav").classList.remove("open"))
 );
 
-// Tutup cart dengan Escape
 document.addEventListener("keydown", (e) => {
   if (e.key === "Escape") closeCart();
 });
 
-renderCart();
+/* ========== INIT ========== */
+document.addEventListener("DOMContentLoaded", () => {
+  initWelcome();
+  initInteractiveHero();
+  initCardTilt();
+  initShowcase3D();
+  initCountdown();
+  renderCart();
+});

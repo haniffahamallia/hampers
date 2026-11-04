@@ -16,11 +16,11 @@
   <!-- Canonical -->
   <link rel="canonical" href="https://niffalla.my.id/">
 
-  <!-- Alternate language (optional) -->
+  <!-- Alternate language -->
   <link rel="alternate" hreflang="id" href="https://niffalla.my.id/">
   <link rel="alternate" hreflang="x-default" href="https://niffalla.my.id/">
 
-  <!-- Open Graph (Facebook, WhatsApp, Instagram, LinkedIn, dll.) -->
+  <!-- Open Graph -->
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="Niffalla Luxury Hampers">
   <meta property="og:title" content="Niffalla Luxury Hampers — Hampers Pernikahan Elegan">
@@ -54,7 +54,7 @@
   <!-- Stylesheet -->
   <link rel="stylesheet" href="style.css">
 
-  <!-- Structured Data: Organization + WebSite + Product Catalog (JSON-LD) -->
+  <!-- Structured Data -->
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -119,10 +119,42 @@
   }
   </script>
 
-  <!-- Google Search Console Verification -->
   <meta name="google-site-verification" content="oebyaoelkdwgZjVMCGEmhZsqhdFNKHIsg4fv-FmWe9s" />
 </head>
 <body>
+  <!-- ===== WELCOME OVERLAY ===== -->
+  <div class="welcome-overlay" id="welcomeOverlay" aria-hidden="false">
+    <div class="welcome-bg">
+      <div class="welcome-petal"></div>
+      <div class="welcome-petal"></div>
+      <div class="welcome-petal"></div>
+      <div class="welcome-petal"></div>
+      <div class="welcome-petal"></div>
+      <div class="welcome-orb"></div>
+      <div class="welcome-orb"></div>
+    </div>
+    <div class="welcome-content">
+      <div class="welcome-flower">🌸</div>
+      <p class="welcome-eyebrow">SELAMAT DATANG</p>
+      <h1 class="welcome-title">"𝑵𝒊𝒇𝒇𝒂𝒍𝒍𝒂"</h1>
+      <p class="welcome-sub">ℒ𝓊𝓍𝓊𝓇𝓎 ℋ𝒶𝓂𝓅𝑒𝓇𝓈</p>
+      <p class="welcome-text">Hadiah indah untuk momen yang berarti.<br>Siap merasakan keanggunan soft blue?</p>
+      <button class="btn primary welcome-enter" id="welcomeEnter">
+        Masuk ke Website <span>→</span>
+      </button>
+      <label class="welcome-sound-opt">
+        <input type="checkbox" id="welcomeSoundCheck" checked>
+        <span>Putar suara pembukaan</span>
+      </label>
+    </div>
+  </div>
+
+  <!-- Sound mute floating control -->
+  <button class="sound-toggle" id="soundToggle" aria-label="Toggle suara" title="Suara">
+    <span class="sound-on">🔊</span>
+    <span class="sound-off">🔇</span>
+  </button>
+
   <div class="announcement">✨ Hampers pernikahan dengan sentuhan elegan & personal ✨</div>
 
   <header class="header" id="home">
@@ -136,6 +168,7 @@
       <a href="#home">Home</a>
       <a href="#about">About</a>
       <a href="#koleksi">Koleksi</a>
+      <a href="#showcase3d">3D Showcase</a>
       <a href="#promo">Promo</a>
       <a href="#cara-order">Cara Order</a>
       <a href="#faq">FAQ</a>
@@ -157,10 +190,12 @@
   </div>
 
   <main>
-    <section class="hero">
-      <div class="hero-copy">
+    <!-- ===== INTERACTIVE HERO ===== -->
+    <section class="hero" id="heroInteractive">
+      <div class="hero-particles" id="heroParticles"></div>
+      <div class="hero-copy" data-parallax="0.04">
         <p class="eyebrow">WEDDING • GIFT • MOMENTS</p>
-        <h1>Hadiah indah untuk<br><em>momen yang berarti.</em></h1>
+        <h1 class="hero-title-anim">Hadiah indah untuk<br><em class="typed-target">momen yang berarti.</em></h1>
         <p class="hero-text">Hampers pernikahan bernuansa soft blue & white, dirangkai dengan detail yang elegan untuk membuat setiap pemberian terasa lebih istimewa.</p>
         <div class="hero-buttons">
           <a class="btn primary" href="#koleksi">Lihat Koleksi <span>→</span></a>
@@ -171,16 +206,18 @@
         </div>
       </div>
 
-      <div class="hero-visual">
-        <div class="hero-frame">
-          <img src="assets/hampers-3.jpg" alt="Koleksi hampers pernikahan Niffalla">
+      <div class="hero-visual" data-parallax="0.08">
+        <div class="hero-frame tilt-3d" id="heroFrame">
+          <img src="assets/hampers-3.jpg" alt="Koleksi hampers pernikahan Niffalla" id="heroImg">
+          <div class="hero-shine"></div>
         </div>
-        <div class="floating-card">
+        <div class="floating-card" data-parallax="0.12">
           <span class="mini-flower">✿</span>
           <div><strong>Made with care</strong><small>untuk hari spesialmu</small></div>
         </div>
-        <div class="blue-orb orb-one"></div>
-        <div class="blue-orb orb-two"></div>
+        <div class="blue-orb orb-one" data-parallax="0.15"></div>
+        <div class="blue-orb orb-two" data-parallax="0.1"></div>
+        <div class="hero-glow"></div>
       </div>
     </section>
 
@@ -213,31 +250,31 @@
       </div>
 
       <div class="product-grid" id="productGrid">
-        <article class="product-card" data-name="wedding premium blue hampers" data-category="wedding premium">
+        <article class="product-card tilt-card" data-name="wedding premium blue hampers" data-category="wedding premium">
           <div class="product-image"><img src="assets/hampers-1.jpg" alt="Wedding Premium Blue Hampers"><span class="tag">Best Seller</span></div>
           <div class="product-info"><div><h3>Wedding Premium Blue</h3><p>Seserahan • Wedding</p></div><strong>Rp 450K</strong></div>
           <button class="add-cart" data-product="Wedding Premium Blue" data-price="450000">Tambah ke Keranjang</button>
         </article>
 
-        <article class="product-card" data-name="soft blue couple hamper" data-category="wedding couple">
+        <article class="product-card tilt-card" data-name="soft blue couple hamper" data-category="wedding couple">
           <div class="product-image"><img src="assets/hampers-2.jpg" alt="Soft Blue Couple Hamper"><span class="tag">Custom</span></div>
           <div class="product-info"><div><h3>Soft Blue Couple</h3><p>Couple • Gift</p></div><strong>Rp 525K</strong></div>
           <button class="add-cart" data-product="Soft Blue Couple" data-price="525000">Tambah ke Keranjang</button>
         </article>
 
-        <article class="product-card" data-name="elegant wedding box" data-category="wedding elegant">
+        <article class="product-card tilt-card" data-name="elegant wedding box" data-category="wedding elegant">
           <div class="product-image"><img src="assets/hampers-3.jpg" alt="Elegant Wedding Box"><span class="tag">Popular</span></div>
           <div class="product-info"><div><h3>Elegant Wedding Box</h3><p>Wedding • Elegant</p></div><strong>Rp 600K</strong></div>
           <button class="add-cart" data-product="Elegant Wedding Box" data-price="600000">Tambah ke Keranjang</button>
         </article>
 
-        <article class="product-card" data-name="blue luxury tray" data-category="luxury premium">
+        <article class="product-card tilt-card" data-name="blue luxury tray" data-category="luxury premium">
           <div class="product-image"><img src="assets/hampers-4.jpg" alt="Blue Luxury Tray"><span class="tag">Premium</span></div>
           <div class="product-info"><div><h3>Blue Luxury Tray</h3><p>Luxury • Premium</p></div><strong>Rp 750K</strong></div>
           <button class="add-cart" data-product="Blue Luxury Tray" data-price="750000">Tambah ke Keranjang</button>
         </article>
 
-        <article class="product-card" data-name="soft blue beauty basket" data-category="beauty gift">
+        <article class="product-card tilt-card" data-name="soft blue beauty basket" data-category="beauty gift">
           <div class="product-image"><img src="assets/hampers-5.jpg" alt="Soft Blue Beauty Basket"><span class="tag">New</span></div>
           <div class="product-info"><div><h3>Soft Blue Beauty</h3><p>Beauty • Gift</p></div><strong>Rp 550K</strong></div>
           <button class="add-cart" data-product="Soft Blue Beauty" data-price="550000">Tambah ke Keranjang</button>
@@ -246,13 +283,108 @@
       <p class="empty-state" id="emptyState">Produk yang kamu cari belum ditemukan.</p>
     </section>
 
+    <!-- ===== 3D PRODUCT SHOWCASE ===== -->
+    <section class="section showcase3d" id="showcase3d">
+      <div class="section-heading centered">
+        <p class="eyebrow">3D EXPERIENCE</p>
+        <h2>Rasakan hampers<br><em>dari setiap sudut.</em></h2>
+        <p class="section-description" style="margin:16px auto 0;max-width:480px">Gerakkan mouse / sentuh untuk memutar. Klik untuk memilih favoritmu.</p>
+      </div>
+
+      <div class="showcase-stage">
+        <div class="showcase-carousel" id="showcaseCarousel">
+          <div class="showcase-item active" data-index="0" data-product="Wedding Premium Blue" data-price="450000">
+            <div class="showcase-card">
+              <img src="assets/hampers-1.jpg" alt="Wedding Premium Blue">
+              <div class="showcase-info">
+                <h3>Wedding Premium Blue</h3>
+                <p>Seserahan • Best Seller</p>
+                <strong>Rp 450K</strong>
+              </div>
+            </div>
+          </div>
+          <div class="showcase-item" data-index="1" data-product="Soft Blue Couple" data-price="525000">
+            <div class="showcase-card">
+              <img src="assets/hampers-2.jpg" alt="Soft Blue Couple">
+              <div class="showcase-info">
+                <h3>Soft Blue Couple</h3>
+                <p>Couple • Gift</p>
+                <strong>Rp 525K</strong>
+              </div>
+            </div>
+          </div>
+          <div class="showcase-item" data-index="2" data-product="Elegant Wedding Box" data-price="600000">
+            <div class="showcase-card">
+              <img src="assets/hampers-3.jpg" alt="Elegant Wedding Box">
+              <div class="showcase-info">
+                <h3>Elegant Wedding Box</h3>
+                <p>Wedding • Popular</p>
+                <strong>Rp 600K</strong>
+              </div>
+            </div>
+          </div>
+          <div class="showcase-item" data-index="3" data-product="Blue Luxury Tray" data-price="750000">
+            <div class="showcase-card">
+              <img src="assets/hampers-4.jpg" alt="Blue Luxury Tray">
+              <div class="showcase-info">
+                <h3>Blue Luxury Tray</h3>
+                <p>Luxury • Premium</p>
+                <strong>Rp 750K</strong>
+              </div>
+            </div>
+          </div>
+          <div class="showcase-item" data-index="4" data-product="Soft Blue Beauty" data-price="550000">
+            <div class="showcase-card">
+              <img src="assets/hampers-5.jpg" alt="Soft Blue Beauty">
+              <div class="showcase-info">
+                <h3>Soft Blue Beauty</h3>
+                <p>Beauty • New</p>
+                <strong>Rp 550K</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="showcase-controls">
+          <button class="showcase-prev" id="showcasePrev" aria-label="Sebelumnya">‹</button>
+          <div class="showcase-dots" id="showcaseDots"></div>
+          <button class="showcase-next" id="showcaseNext" aria-label="Berikutnya">›</button>
+        </div>
+        <button class="btn primary showcase-add" id="showcaseAdd">Tambah ke Keranjang</button>
+      </div>
+    </section>
+
+    <!-- ===== SPECIAL PROMO + COUNTDOWN ===== -->
     <section class="section promo" id="promo">
-      <div class="promo-card">
-        <div>
+      <div class="promo-card promo-enhanced">
+        <div class="promo-left">
           <p class="eyebrow">SPECIAL OFFER</p>
           <h2>Make it personal.<br><em>Make it Niffalla.</em></h2>
-          <p>Gratis kartu ucapan untuk setiap pemesanan hampers wedding selama periode promo.</p>
-          <a class="btn primary" href="https://wa.me/6285159977358?text=Halo%20kak%20aku%20mau%20order%20hampers%201packet%20ya" target="_blank" rel="noopener">Tanya Promo</a>
+          <p>Gratis kartu ucapan + diskon spesial untuk setiap pemesanan hampers wedding selama periode promo.</p>
+          
+          <div class="countdown" id="promoCountdown" aria-live="polite">
+            <div class="countdown-item">
+              <span class="countdown-num" id="cdDays">00</span>
+              <span class="countdown-label">Hari</span>
+            </div>
+            <div class="countdown-sep">:</div>
+            <div class="countdown-item">
+              <span class="countdown-num" id="cdHours">00</span>
+              <span class="countdown-label">Jam</span>
+            </div>
+            <div class="countdown-sep">:</div>
+            <div class="countdown-item">
+              <span class="countdown-num" id="cdMins">00</span>
+              <span class="countdown-label">Menit</span>
+            </div>
+            <div class="countdown-sep">:</div>
+            <div class="countdown-item">
+              <span class="countdown-num" id="cdSecs">00</span>
+              <span class="countdown-label">Detik</span>
+            </div>
+          </div>
+          <p class="countdown-note" id="countdownNote">Promo berakhir dalam waktu di atas</p>
+
+          <a class="btn primary" href="https://wa.me/6285159977358?text=Halo%20kak%20aku%20mau%20order%20hampers%201packet%20ya" target="_blank" rel="noopener">Tanya Promo Sekarang</a>
         </div>
         <div class="promo-art"><span>🌸</span><b>LOVE</b><small>in every detail</small></div>
       </div>
@@ -312,7 +444,6 @@
       <p class="cart-empty">Keranjang masih kosong.</p>
     </div>
 
-    <!-- Form data pemesan (database order) -->
     <div class="cart-form" id="orderFormWrap">
       <h3>Data Pemesan</h3>
       <div id="orderStatus" class="order-status"></div>
@@ -326,7 +457,6 @@
       <label for="customerNote">Catatan / Request Custom</label>
       <textarea id="customerNote" placeholder="Contoh: kartu ucapan untuk Anisa & Budi, warna soft blue..."></textarea>
 
-      <!-- Honeypot anti-spam (tersembunyi dari user) -->
       <div style="position:absolute;left:-9999px;opacity:0;height:0;overflow:hidden" aria-hidden="true">
         <label for="hpWebsite">Website</label>
         <input type="text" id="hpWebsite" name="website" tabindex="-1" autocomplete="off">
